@@ -4,7 +4,7 @@ Name: geoip-vmod-%{VARNISHVER}
 Version: %{version}
 Release: %{release}%{?dist}
 License: BSD
-Group: System Environment/Daemons
+Group: Other
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires: varnish > 3.0, geoip
 BuildRequires: make, autoconf, pcre-devel,automake,libtool,geoip,geoip-devel
