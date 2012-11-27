@@ -18,6 +18,7 @@ namespace :varnish do
   task :clean do
     %x[rm -rf tmp]
     %x[rm -rf vmod]
+    %x[rm -rf rpmbuild]
   end
 
   task :get => :setup do
@@ -38,7 +39,7 @@ namespace :varnish do
     task :rpm => ['varnish:get', :rpm_build_area] do
       puts "building geoip-vmod rpm for varnish version #{VARNISH_FOLDER}"
       Dir.chdir(PROJECT_ROOT)
-      %x[rpmbuild --define 'source #{SOURCE_URL}' --define 'VARNISH_URL #{VARNISH_URL}' --define '_topdir #{RPM_ROOT}'  --bb geoip-vmod.spec]
+      %x[rpmbuild --define 'source #{SOURCE_URL}' --define 'varnish_url #{VARNISH_URL}' --define '_topdir #{RPM_ROOT}'  --bb geoip-vmod.spec]
     end
 
     task :compile => :'varnish:compile' do
