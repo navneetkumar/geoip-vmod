@@ -14,8 +14,8 @@ BuildRequires: make, autoconf, pcre-devel,automake,libtool,geoip,geoip-devel
 GeoIP vmod
 
 %prep
-rm -rf varnish-3.0.3
-rm -rf geoip-vmod
+rm -rf ./varnish-3.0.3
+rm -rf ./geoip-vmod
 wget %{varnish_url}
 tar -xzvf varnish-3.0.3.tar.gz
 git clone %{source} geoip-vmod
