@@ -17,28 +17,41 @@ namespace :varnish do
     FileUtils.mkdir_p 'vmod'
   end
 
+  desc "cleans varnish artifacts"
   task :clean do
     %x[rm -rf tmp]
     %x[rm -rf vmod]
     %x[rm -rf rpmbuild]
   end
 
+  desc "get varnish sources"
   task :get => :setup do
     Dir.chdir("#{PROJECT_ROOT}/tmp/")
     %x[wget #{VARNISH_URL}] unless File.exists?(VARNISH_FILE_NAME)
     %x[tar -xzf #{VARNISH_FILE_NAME}]
   end
 
+  desc "compile varnish"
   task :compile => :get do
     puts "Compiling varnish from #{VARNISH_URL}"
-
     Dir.chdir("#{PROJECT_ROOT}/tmp/#{VARNISH_FOLDER}")
     system("./configure")
     system("make")
   end
 
+  task :compile => :'varnish:compile' do
+    puts "building geoip-vmod for varnish version #{VARNISH_FOLDER}"
+    Dir.chdir(PROJECT_ROOT)
+    FileUtils.mkdir_p 'vmod'
+    system("sh autogen.sh")
+    system("./configure VARNISHSRC=tmp/#{VARNISH_FOLDER} VMODDIR=#{PROJECT_ROOT}/vmod")
+    system('make install')
+  end
+
   namespace :vmod do
-    task :rpm => ['varnish:get', :rpm_build_area] do
+
+    desc 'create geoip-vmod rpm from source'
+    task :rpm => [:rpm_build_area] do
       puts "building geoip-vmod rpm for varnish version #{VARNISH_FOLDER}"
       Dir.chdir(PROJECT_ROOT)
       %x[rpmbuild --define 'version #{VERSION}' --define 'release #{RELEASE}' --define 'source #{SOURCE_URL}' --define 'varnish_url #{VARNISH_URL}' --define '_topdir #{RPM_ROOT}'  --bb geoip-vmod.spec]
