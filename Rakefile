@@ -10,11 +10,35 @@ RELEASE = "1"
 require 'fileutils'
 
 namespace :varnish do
-  desc "compile varnish"
-  task :setup do
+  def setup
     Dir.chdir(PROJECT_ROOT)
     FileUtils.mkdir_p 'tmp'
     FileUtils.mkdir_p 'vmod'
+  end
+
+  def compile_varnish
+    Dir.chdir("#{PROJECT_ROOT}/tmp/")
+    %x[wget #{VARNISH_URL}] unless File.exists?(VARNISH_FILE_NAME)
+    %x[tar -xzf #{VARNISH_FILE_NAME}]
+    Dir.chdir("#{PROJECT_ROOT}/tmp/#{VARNISH_FOLDER}")
+    system("./configure")
+    system("make")
+  end
+
+  def compile_geoip_vmod
+    Dir.chdir(PROJECT_ROOT)
+    system("sh autogen.sh")
+    system("./configure VARNISHSRC=tmp/#{VARNISH_FOLDER} VMODDIR=#{PROJECT_ROOT}/vmod")
+    system('make install')
+  end
+
+  desc "Compiles and builds geoip-vmod for varnish version #{VARNISH_VERSION}"
+  task :compile do
+    setup
+    puts "compiling varnish from source at #{VARNISH_URL}"
+    compile_varnish
+    puts "compiling geoip-vmod from source"
+    compile_geoip_vmod
   end
 
   desc "cleans varnish artifacts"
@@ -22,30 +46,6 @@ namespace :varnish do
     %x[rm -rf tmp]
     %x[rm -rf vmod]
     %x[rm -rf rpmbuild]
-  end
-
-  desc "get varnish sources"
-  task :get => :setup do
-    Dir.chdir("#{PROJECT_ROOT}/tmp/")
-    %x[wget #{VARNISH_URL}] unless File.exists?(VARNISH_FILE_NAME)
-    %x[tar -xzf #{VARNISH_FILE_NAME}]
-  end
-
-  desc "compile varnish"
-  task :compile => :get do
-    puts "Compiling varnish from #{VARNISH_URL}"
-    Dir.chdir("#{PROJECT_ROOT}/tmp/#{VARNISH_FOLDER}")
-    system("./configure")
-    system("make")
-  end
-
-  task :compile => :'varnish:compile' do
-    puts "building geoip-vmod for varnish version #{VARNISH_FOLDER}"
-    Dir.chdir(PROJECT_ROOT)
-    FileUtils.mkdir_p 'vmod'
-    system("sh autogen.sh")
-    system("./configure VARNISHSRC=tmp/#{VARNISH_FOLDER} VMODDIR=#{PROJECT_ROOT}/vmod")
-    system('make install')
   end
 
   namespace :vmod do
@@ -64,15 +64,6 @@ namespace :varnish do
 
       rpm = "geoip-vmod-#{VARNISH_VERSION}-#{VERSION}-#{RELEASE}.x86_64.rpm"
       sh "scp '#{File.join RPM_ROOT, 'RPMS/x86_64', rpm}' '#{ENV['YUM_REPOSITORY_HOST']}:#{ENV['YUM_REPOSITORY_ROOT']}'"
-    end
-
-    task :compile => :'varnish:compile' do
-      puts "building geoip-vmod for varnish version #{VARNISH_FOLDER}"
-      Dir.chdir(PROJECT_ROOT)
-      FileUtils.mkdir_p 'vmod'
-      system("sh autogen.sh")
-      system("./configure VARNISHSRC=tmp/#{VARNISH_FOLDER} VMODDIR=#{PROJECT_ROOT}/vmod")
-      system('make install')
     end
 
     task :rpm_build_area do
