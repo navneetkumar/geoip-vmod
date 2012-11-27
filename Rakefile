@@ -1,10 +1,12 @@
-VARNISH_FOLDER = "varnish-3.0.3"
+VARNISH_VERSION = "3.0.3"
+VARNISH_FOLDER = "varnish-#{VARNISH_VERSION}"
 VARNISH_FILE_NAME = "#{VARNISH_FOLDER}.tar.gz"
-VARNISH_URL = "http://repo.varnish-cache.org/source/varnish-3.0.3.tar.gz"
+VARNISH_URL = "http://repo.varnish-cache.org/source/varnish-#{VARNISH_VERSION}.tar.gz"
 SOURCE_URL = "https://github.com/navneetkumar/geoip-vmod.git"
 PROJECT_ROOT = File.expand_path(File.dirname(__FILE__))
 RPM_ROOT = "#{PROJECT_ROOT}/rpmbuild"
-
+VERSION = "0.1"
+RELEASE = "1"
 require 'fileutils'
 
 namespace :varnish do
@@ -39,7 +41,16 @@ namespace :varnish do
     task :rpm => ['varnish:get', :rpm_build_area] do
       puts "building geoip-vmod rpm for varnish version #{VARNISH_FOLDER}"
       Dir.chdir(PROJECT_ROOT)
-      %x[rpmbuild --define 'source #{SOURCE_URL}' --define 'varnish_url #{VARNISH_URL}' --define '_topdir #{RPM_ROOT}'  --bb geoip-vmod.spec]
+      %x[rpmbuild --define 'version #{VERSION}' --define 'release #{RELEASE}' --define 'source #{SOURCE_URL}' --define 'varnish_url #{VARNISH_URL}' --define '_topdir #{RPM_ROOT}'  --bb geoip-vmod.spec]
+    end
+
+    desc 'publish geoip-vmod rpm RPMS to yum repo'
+    task :publish do
+      raise 'Please set YUM_REPOSITORY_HOST' unless ENV['YUM_REPOSITORY_HOST']
+      raise 'Please set YUM_REPOSITORY_ROOT' unless ENV['YUM_REPOSITORY_ROOT']
+
+      rpm = "geoip-vmod-#{VARNISH_VERSION}-#{VERSION}-#{RELEASE}.x86_64.rpm"
+      sh "scp '#{File.join RPM_ROOT, 'RPMS/x86_64', rpm}' '#{ENV['YUM_REPOSITORY_HOST']}:#{ENV['YUM_REPOSITORY_ROOT']}'"
     end
 
     task :compile => :'varnish:compile' do

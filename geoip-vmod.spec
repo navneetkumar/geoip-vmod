@@ -1,8 +1,8 @@
 # %define VARNISHVER 3.0.3
 Summary: GeoIP vmod
 Name: geoip-vmod-%{VARNISHVER}
-Version: 0.1
-Release: 1%{?dist}
+Version: %{version}
+Release: %{release}%{?dist}
 License: BSD
 Group: System Environment/Daemons
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
