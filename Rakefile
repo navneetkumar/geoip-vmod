@@ -1,6 +1,7 @@
 VARNISH_FOLDER = "varnish-3.0.3"
 VARNISH_FILE_NAME = "#{VARNISH_FOLDER}.tar.gz"
 VARNISH_URL = "http://repo.varnish-cache.org/source/varnish-3.0.3.tar.gz"
+SOURCE_URL = "https://github.com/navneetkumar/geoip-vmod.git"
 PROJECT_ROOT = File.expand_path(File.dirname(__FILE__))
 RPM_ROOT = "#{PROJECT_ROOT}/rpmbuild"
 
@@ -37,7 +38,7 @@ namespace :varnish do
     task :rpm => ['varnish:get', :rpm_build_area] do
       puts "building geoip-vmod rpm for varnish version #{VARNISH_FOLDER}"
       Dir.chdir(PROJECT_ROOT)
-      %x[rpmbuild --define 'VARNISHSRC tmp/#{VARNISH_FOLDER}' --define '_topdir #{RPM_ROOT}'  --bb geoip-vmod.spec]
+      %x[rpmbuild --define 'source #{SOURCE_URL}' --define 'VARNISH_URL #{VARNISH_URL}' --define '_topdir #{RPM_ROOT}'  --bb geoip-vmod.spec]
     end
 
     task :compile => :'varnish:compile' do

@@ -5,26 +5,32 @@ Version: 0.1
 Release: 1%{?dist}
 License: BSD
 Group: System Environment/Daemons
-Source0: .
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires: varnish > 3.0
-BuildRequires: make, autoconf, automake, libtool, python-docutils, pcre-devel
+BuildRequires: make, autoconf, pcre-devel,automake,libtool,geoip
+
 
 %description
 GeoIP vmod
 
 %prep
-%setup -n %{name}
+rm -rf varnish-3.0.3
+rm -rf geoip-vmod
+wget %{varnish_src}
+tar -xzvf varnish-3.0.3.tar.gz
+git clone %{source} geoip-vmod
 
 %build
-cd %{VARNISHSRC}
-./configure
- make
-cd %{_topdir}
+pushd varnish-3.0.3
+  ./configure
+   make
+popd
 
-./autogen.sh
-./configure VARNISHSRC=%{VARNISHSRC} VMODDIR=/usr/lib64/varnish/vmods/ --prefix=/usr/
-make
+pushd geoip-vmod
+  ./autogen.sh
+  ./configure VARNISHSRC=../varnish-3.0.3 VMODDIR=/usr/lib64/varnish/vmods/ --prefix=/usr/
+  make
+popd
 
 %install
 make install
@@ -35,6 +41,3 @@ rm -rf %{buildroot}
 %files
 %defattr(-,root,root,-)
 /usr/lib64/varnish/vmods/
-
-%changelog
-* rpm spec for 1.0
