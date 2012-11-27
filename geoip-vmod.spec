@@ -5,7 +5,7 @@ Version: 0.1
 Release: 1%{?dist}
 License: BSD
 Group: System Environment/Daemons
-Source0: ./libvmod-digest.tar.gz
+Source0: .
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires: varnish > 3.0
 BuildRequires: make, autoconf, automake, libtool, python-docutils
@@ -17,9 +17,12 @@ GeoIP vmod
 %setup -n %{name}
 
 %build
+./autogen.sh
+./configure VARNISHSRC=%{VARNISHSRC} VMODDIR=/usr/lib64/varnish/vmods/ --prefix=/usr/
+make
 
 %install
-cp vmod/libvmod_geoip.so %{buildroot}
+make install
 
 %clean
 rm -rf %{buildroot}
