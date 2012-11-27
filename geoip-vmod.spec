@@ -8,7 +8,7 @@ Group: System Environment/Daemons
 Source0: .
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires: varnish > 3.0
-BuildRequires: make, autoconf, automake, libtool, python-docutils
+BuildRequires: make, autoconf, automake, libtool, python-docutils, pcre-devel
 
 %description
 GeoIP vmod
@@ -17,6 +17,11 @@ GeoIP vmod
 %setup -n %{name}
 
 %build
+cd %{VARNISHSRC}
+./configure
+ make
+cd %{_topdir}
+
 ./autogen.sh
 ./configure VARNISHSRC=%{VARNISHSRC} VMODDIR=/usr/lib64/varnish/vmods/ --prefix=/usr/
 make

@@ -8,36 +8,50 @@ require 'fileutils'
 
 namespace :varnish do
   desc "compile varnish"
+  task :setup do
+    Dir.chdir(PROJECT_ROOT)
+    FileUtils.mkdir_p 'tmp'
+    FileUtils.mkdir_p 'vmod'
+  end
+
   task :clean do
     %x[rm -rf tmp]
     %x[rm -rf vmod]
   end
-  task :compile do
-    puts "Compiling varnish from #{VARNISH_URL}"
-    FileUtils.mkdir_p 'tmp'
-    Dir.chdir('tmp')
+
+  task :get => :setup do
+    Dir.chdir("#{PROJECT_ROOT}/tmp/")
     %x[wget #{VARNISH_URL}] unless File.exists?(VARNISH_FILE_NAME)
     %x[tar -xzf #{VARNISH_FILE_NAME}]
-    Dir.chdir(VARNISH_FOLDER)
+  end
+
+  task :compile => :get do
+    puts "Compiling varnish from #{VARNISH_URL}"
+
+    Dir.chdir("#{PROJECT_ROOT}/tmp/#{VARNISH_FOLDER}")
     system("./configure")
     system("make")
   end
 
-  task :vmodrpm => [:compile, :rpm_build_area] do
-    %x[rpmbuild --define 'VARNISHSRC tmp/#{VARNISH_FOLDER}' --define '_topdir #{RPM_ROOT}'  --bb geoip-vmod.spec]
-  end
+  namespace :vmod do
+    task :rpm => ['varnish:get', :rpm_build_area] do
+      puts "building geoip-vmod rpm for varnish version #{VARNISH_FOLDER}"
+      Dir.chdir(PROJECT_ROOT)
+      %x[rpmbuild --define 'VARNISHSRC tmp/#{VARNISH_FOLDER}' --define '_topdir #{RPM_ROOT}'  --bb geoip-vmod.spec]
+    end
 
-  task :vmodcompile => :compile do
-    puts "building geoip-vmod for varnish version #{VARNISH_FOLDER}"
-    Dir.chdir(PROJECT_ROOT)
-    FileUtils.mkdir_p 'vmod'
-    system("sh autogen.sh")
-    system("./configure VARNISHSRC=tmp/#{VARNISH_FOLDER} VMODDIR=#{PROJECT_ROOT}/vmod")
-    system('make install')
-  end
+    task :compile => :'varnish:compile' do
+      puts "building geoip-vmod for varnish version #{VARNISH_FOLDER}"
+      Dir.chdir(PROJECT_ROOT)
+      FileUtils.mkdir_p 'vmod'
+      system("sh autogen.sh")
+      system("./configure VARNISHSRC=tmp/#{VARNISH_FOLDER} VMODDIR=#{PROJECT_ROOT}/vmod")
+      system('make install')
+    end
 
-  task :rpm_build_area do
-    dirs = %w{
+    task :rpm_build_area do
+      Dir.chdir(PROJECT_ROOT)
+      dirs = %w{
         BUILD
         RPMS/noarch
         RPMS/x86_64
@@ -45,12 +59,13 @@ namespace :varnish do
         SPECS
         SRPMS
       }
-    dirs.each do |dir|
-      full_path = "#{RPM_ROOT}/#{dir}"
-      FileUtils.rm_rf full_path
-      FileUtils.mkdir_p full_path
+      dirs.each do |dir|
+        full_path = "#{RPM_ROOT}/#{dir}"
+        FileUtils.rm_rf full_path
+        FileUtils.mkdir_p full_path
+      end
     end
   end
 end
 
-task :default => ['varnish:vmod']
+task :default => ['varnish:vmod:rpm']
