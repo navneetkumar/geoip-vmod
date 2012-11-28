@@ -25,6 +25,7 @@
 //  `----
 
 static const char *unknownCountry= "AA";
+static const char *unknownRegion= "Unknown";
 
 int
 init_function(struct vmod_priv *priv, const struct VCL_conf *conf)
@@ -52,4 +53,30 @@ vmod_country(struct sess *sp, const char *ip)
       GeoIP_delete(gi);
     }
     return(cp);
+}
+
+const char *
+vmod_region(struct sess *sp, const char *ip)
+{
+    GeoIPRegion *gir;
+    const char *region;
+    GeoIP *gi = NULL;
+
+    gi = GeoIP_new(GEOIP_STANDARD);
+    if (gi) {
+      gir =   GeoIP_region_by_addr(gi, ip);
+    }
+    if (!gir) {
+      region = unknownRegion;
+    }
+    region = WS_Dup(sp->wrk->ws, gir->region);
+
+    if (gi) {
+      GeoIP_delete(gi);
+    }
+    if ( gir) {
+			GeoIPRegion_delete(gir);
+		}
+    return(region);
+
 }
