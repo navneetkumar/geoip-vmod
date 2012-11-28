@@ -1,6 +1,7 @@
 /**/
 #include <stdlib.h>
 #include <GeoIP.h>
+#include <GeoIPCity.h>
 
 #include "vrt.h"
 #include "bin/varnishd/cache.h"
@@ -23,9 +24,11 @@
 //  | series of numbers 900 to 999 are available. These users
 //  | should inform the ISO 3166/MA of such use.
 //  `----
+#ifndef GEOIP_CITY_DATA
+#define GEOIP_CITY_DATA "/root/tmp/geoip-vmod/tmp/GeoIP_CITY_DB/GeoIPCitybr.dat"
+#endif
 
-static const char *unknownCountry= "Unknown";
-static const char *unknownRegion= "Unknown";
+static const char *unknown= "Unknown";
 
 int
 init_function(struct vmod_priv *priv, const struct VCL_conf *conf)
@@ -45,7 +48,7 @@ vmod_country(struct sess *sp, const char *ip)
       country = GeoIP_country_code_by_addr(gi, ip);
     }
     if (!country) {
-      country= unknownCountry;
+      country= unknown;
     }
     cp= WS_Dup(sp->wrk->ws, country);
 
@@ -58,25 +61,23 @@ vmod_country(struct sess *sp, const char *ip)
 const char *
 vmod_region(struct sess *sp, const char *ip)
 {
-    GeoIPRegion *gir;
-    const char *region;
-    GeoIP *gi = NULL;
+        char *formattedRecord [500];
+        char *cp;
+        char *region = NULL;
+	GeoIPRecord *record = NULL;
+	GeoIP *gi = NULL;
+	gi =  GeoIP_open(GEOIP_CITY_DATA, GEOIP_MEMORY_CACHE);
+	if (gi) {
+		record = GeoIP_record_by_addr(gi,ip);
+		region = record->region;
+	}
 
-    gi = GeoIP_new(GEOIP_STANDARD);
-    if (gi) {
-      gir =   GeoIP_region_by_addr(gi, ip);
-    }
-    if (!gir) {
-      region = unknownRegion;
-    }
-    region = WS_Dup(sp->wrk->ws, gir->region);
+	if(!region) {
+		sprintf(formattedRecord, "Unknown region for %s", ip);
+	} else {
+		sprintf(formattedRecord, "ip: %s, country_code: %s, city: %s, region: %s", ip ,record->country_code, record->city, record->region);
+	} 
 
-    if (gi) {
-      GeoIP_delete(gi);
-    }
-    if ( gir) {
-			GeoIPRegion_delete(gir);
-		}
-    return(region);
-
+	cp= WS_Dup(sp->wrk->ws, formattedRecord);
+	return(cp);
 }
