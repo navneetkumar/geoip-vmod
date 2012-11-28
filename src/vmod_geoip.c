@@ -24,7 +24,7 @@
 //  | should inform the ISO 3166/MA of such use.
 //  `----
 
-static const char *unknownCountry= "AA";
+static const char *unknownCountry= "Unknown";
 static const char *unknownRegion= "Unknown";
 
 int
