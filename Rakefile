@@ -40,6 +40,12 @@ namespace :varnish do
     puts "compiling geoip-vmod from source"
     compile_geoip_vmod
   end
+  
+  desc "varnish checks"
+  task :check => :compile do
+    Dir.chdir(PROJECT_ROOT)
+    raise "varnish checks failed" unless system("make check")
+  end
 
   desc "cleans varnish artifacts"
   task :clean do
