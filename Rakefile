@@ -57,13 +57,13 @@ namespace :varnish do
       %x[rpmbuild --define 'version #{VERSION}' --define 'release #{RELEASE}' --define 'source #{SOURCE_URL}' --define 'varnish_url #{VARNISH_URL}' --define '_topdir #{RPM_ROOT}'  --bb geoip-vmod.spec]
     end
 
-    desc 'publish geoip-vmod rpm RPMS to yum repo'
+    desc 'publish geoip-vmod rpm RPMS to yum repos'
     task :publish do
-      raise 'Please set YUM_REPOSITORY_HOST' unless ENV['YUM_REPOSITORY_HOST']
-      raise 'Please set YUM_REPOSITORY_ROOT' unless ENV['YUM_REPOSITORY_ROOT']
-
-      rpm = "geoip-vmod-#{VARNISH_VERSION}-#{VERSION}-#{RELEASE}.x86_64.rpm"
-      sh "scp '#{File.join RPM_ROOT, 'RPMS/x86_64', rpm}' '#{ENV['YUM_REPOSITORY_HOST']}:#{ENV['YUM_REPOSITORY_ROOT']}'"
+      yum_repos = ENV['YUM_REPOS'].split(",") rescue raise 'Please set YUM_REPOS'
+      scp_opts = ENV['SCP_OPTS']
+      raise 'Please set SCP_OPTS' unless scp_opts
+      rpm = File.join RPM_ROOT, 'RPMS/x86_64', "geoip-vmod-#{VARNISH_VERSION}-#{VERSION}-#{RELEASE}.x86_64.rpm"
+      yum_repos.each { |server| sh "scp #{scp_opts} #{rpm} #{server}" }
     end
 
     task :rpm_build_area do
