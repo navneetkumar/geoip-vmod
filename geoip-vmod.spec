@@ -32,7 +32,7 @@ mkdir -p %{vmod_dir}
 
 pushd geoip-vmod
   ./autogen.sh
-  ./configure VARNISHSRC=../varnish-3.0.3 VMODDIR=%{vmod_dir} --prefix=/usr/
+  ./configure VARNISHSRC=../varnish-3.0.3 VMODDIR=%{vmod_dir} --prefix=/usr/ MANDIR=/tmp
   make
 popd
 
