@@ -59,7 +59,7 @@ namespace :varnish do
 
     desc 'publish geoip-vmod rpm RPMS to yum repos'
     task :publish do
-      yum_repos = ENV['YUM_REPOS'].split(",") rescue raise 'Please set YUM_REPOS'
+      (yum_repos = ENV['YUM_REPOS'].split(",")) rescue raise 'Please set YUM_REPOS'
       scp_opts = ENV['SCP_OPTS']
       raise 'Please set SCP_OPTS' unless scp_opts
       rpm = File.join RPM_ROOT, 'RPMS/x86_64', "geoip-vmod-#{VARNISH_VERSION}-#{VERSION}-#{RELEASE}.x86_64.rpm"
