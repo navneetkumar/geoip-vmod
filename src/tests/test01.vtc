@@ -9,12 +9,12 @@ varnish v1 -vcl+backend {
 	import geoip from "${pwd}/.libs/libvmod_geoip.so";
 
 	sub vcl_init {
-               geoip.init_database("/root/tmp/geoip-vmod/tmp/GeoIP_CITY_DB/GeoIPCitybr.dat");
+               geoip.init_database("${pwd}/tests/city.dat");
         }
 	sub vcl_deliver {
 		set resp.http.X-GeoIP = geoip.country("127.0.0.1");
-		set resp.http.X-Location-Unknown = geoip.record("0.0.0.0");
-		set resp.http.X-Location-Known = geoip.record("187.78.67.94");
+#		set resp.http.X-Location-Unknown = geoip.record("1.1.1.1");
+		set resp.http.X-Location-Known = geoip.record("24.24.24.24");
 	}
 } -start
 
@@ -22,8 +22,8 @@ client c1 {
 	txreq -url "/"
 	rxresp
 	expect resp.http.X-GeoIP == "Unknown"
-	expect resp.http.X-Location-Unknown == "ip: 0.0.0.0, country_code: Unknown, region: Unknown"
-	expect resp.http.X-Location-Known == "ip: 187.78.67.94, country_code: BR, region: 30, city: Recife"
+#	expect resp.http.X-Location-Unknown == "ip: 0.0.0.0, country_code: Unknown, region: Unknown"
+	expect resp.http.X-Location-Known == "ip: 24.24.24.24, country_code: US, region: NY, city: New York"
 }
 
 client c1 -run

@@ -14,7 +14,7 @@
 #include <GeoIPCity.h>
 
 #ifndef GEOIP_CITY_DATA
-#define GEOIP_CITY_DATA "/root/tmp/geoip-vmod/tmp/GeoIP_CITY_DB/GeoIPCitybr.dat"
+#define GEOIP_CITY_DATA "/root/tmp/geoip-vmod/src/tests/GeoLiteCity.dat"
 #endif
 
 
@@ -23,13 +23,16 @@ int main(void) {
 	 GeoIPRecord *record = NULL;
 	    GeoIP *gi = NULL;
         //char *ip="201.56.216.242";
-        char *ip="0.0.0.0";
+        //char *ip="67.27.68.34";
+       // char *ip="14.140.107.130";
+        char *ip="192.168.0.1";
 	    gi =  GeoIP_open(GEOIP_CITY_DATA, GEOIP_MEMORY_CACHE);
 	    if (gi) {
-	      country = GeoIP_country_code_by_addr(gi,ip);
 	      record = GeoIP_record_by_addr(gi,ip);
 	    }
+        if(record->region) {  
 	puts(GeoIP_database_info(gi));
 	printf("IP: %s country_code3: %s country_name: %s region: %s city: %s postal_code: %s latitude:%f longigute:%f ",ip,record->country_code3,record->country_name,record->region,record->city,record->postal_code,record->latitude,record->longitude);
-	return EXIT_SUCCESS;
+	}	
+return EXIT_SUCCESS;
 }
