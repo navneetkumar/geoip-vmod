@@ -69,13 +69,12 @@ vmod_region(struct sess *sp, const char *ip)
 	gi =  GeoIP_open(GEOIP_CITY_DATA, GEOIP_MEMORY_CACHE);
 	if (gi) {
 		record = GeoIP_record_by_addr(gi,ip);
-		region = record->region;
 	}
 
-	if(!region) {
-		sprintf(formattedRecord, "Unknown region for %s", ip);
+	if (record->region) {
+		sprintf(formattedRecord, "ip: %s, country_code: %s, region: %s, city: %s", ip ,record->country_code, record->region, record->city);
 	} else {
-		sprintf(formattedRecord, "ip: %s, country_code: %s, city: %s, region: %s", ip ,record->country_code, record->city, record->region);
+		sprintf(formattedRecord, "ip: %s, country_code: Unknown, region: Unknown",ip);
 	} 
 
 	cp= WS_Dup(sp->wrk->ws, formattedRecord);

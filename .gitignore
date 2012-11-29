@@ -6,6 +6,7 @@ Makefile.in
 *.lo
 *.la
 *~
+*.swp
 .idea
 vmod
 tmp
