@@ -59,7 +59,7 @@ vmod_country(struct sess *sp, const char *ip)
 }
 
 const char *
-vmod_region(struct sess *sp, const char *ip)
+vmod_record(struct sess *sp, const char *ip)
 {
         char *formattedRecord [500];
         char *cp;

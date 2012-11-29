@@ -1,4 +1,4 @@
 Module geoip
 Init init_function
 Function STRING country(STRING)
-Function STRING region(STRING)
+Function STRING record(STRING)
