@@ -22,7 +22,8 @@ int main(void) {
 	 const char *country = NULL;
 	 GeoIPRecord *record = NULL;
 	    GeoIP *gi = NULL;
-        char *ip="201.56.216.242";
+        //char *ip="201.56.216.242";
+        char *ip="0.0.0.0";
 	    gi =  GeoIP_open(GEOIP_CITY_DATA, GEOIP_MEMORY_CACHE);
 	    if (gi) {
 	      country = GeoIP_country_code_by_addr(gi,ip);
