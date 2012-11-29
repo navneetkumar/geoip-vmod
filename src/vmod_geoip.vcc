@@ -1,4 +1,5 @@
 Module geoip
 Init init_function
+Function VOID init_database(PRIV_VCL, STRING)
 Function STRING country(STRING)
-Function STRING record(STRING)
+Function STRING record(PRIV_VCL, STRING)

@@ -24,16 +24,42 @@
 //  | series of numbers 900 to 999 are available. These users
 //  | should inform the ISO 3166/MA of such use.
 //  `----
-#ifndef GEOIP_CITY_DATA
-#define GEOIP_CITY_DATA "/root/tmp/geoip-vmod/tmp/GeoIP_CITY_DB/GeoIPCitybr.dat"
-#endif
 
 static const char *unknown= "Unknown";
+
+typedef struct geoIpConfig {
+	char *db_path;
+} config_t;
 
 int
 init_function(struct vmod_priv *priv, const struct VCL_conf *conf)
 {
     return (0);
+}
+
+static config_t *
+make_config(const char *db_path)
+{
+	config_t *cfg;
+
+	cfg = malloc(sizeof(config_t));
+	if(cfg == NULL)
+		return NULL;
+
+	cfg->db_path = strdup(db_path);
+	return cfg;
+}
+ 
+void
+vmod_init_database(struct sess *sp, struct vmod_priv *priv, const char *db_path)
+{
+	config_t *old_cfg = priv->priv;
+
+	priv->priv = make_config(db_path);
+	if(priv->priv && old_cfg) {
+		free(old_cfg->db_path);
+		free(old_cfg);
+	}
 }
 
 const char *
@@ -59,14 +85,16 @@ vmod_country(struct sess *sp, const char *ip)
 }
 
 const char *
-vmod_record(struct sess *sp, const char *ip)
+vmod_record(struct sess *sp, struct vmod_priv *priv, const char *ip)
 {
         char *formattedRecord [500];
         char *cp;
         char *region = NULL;
 	GeoIPRecord *record = NULL;
 	GeoIP *gi = NULL;
-	gi =  GeoIP_open(GEOIP_CITY_DATA, GEOIP_MEMORY_CACHE);
+        config_t *cfg = priv->priv;
+
+	gi =  GeoIP_open(cfg->db_path, GEOIP_MEMORY_CACHE);
 	if (gi) {
 		record = GeoIP_record_by_addr(gi,ip);
 	}

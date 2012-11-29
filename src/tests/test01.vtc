@@ -8,6 +8,9 @@ server s1 {
 varnish v1 -vcl+backend {
 	import geoip from "${pwd}/.libs/libvmod_geoip.so";
 
+	sub vcl_init {
+               geoip.init_database("/root/tmp/geoip-vmod/tmp/GeoIP_CITY_DB/GeoIPCitybr.dat");
+        }
 	sub vcl_deliver {
 		set resp.http.X-GeoIP = geoip.country("127.0.0.1");
 		set resp.http.X-Location-Unknown = geoip.record("0.0.0.0");
