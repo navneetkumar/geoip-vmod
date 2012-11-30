@@ -13,7 +13,7 @@ varnish v1 -vcl+backend {
         }
 	sub vcl_deliver {
 		set resp.http.X-GeoIP = geoip.country("127.0.0.1");
-#		set resp.http.X-Location-Unknown = geoip.record("1.1.1.1");
+		set resp.http.X-Location-Unknown = geoip.record("127.0.0.1");
 		set resp.http.X-Location-Known = geoip.record("24.24.24.24");
 	}
 } -start
@@ -22,7 +22,7 @@ client c1 {
 	txreq -url "/"
 	rxresp
 	expect resp.http.X-GeoIP == "Unknown"
-#	expect resp.http.X-Location-Unknown == "ip: 0.0.0.0, country_code: Unknown, region: Unknown"
+	expect resp.http.X-Location-Unknown == "ip: 127.0.0.1, country_code: Unknown, region: Unknown"
 	expect resp.http.X-Location-Known == "ip: 24.24.24.24, country_code: US, region: NY, city: New York"
 }
 

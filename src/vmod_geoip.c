@@ -99,7 +99,7 @@ vmod_record(struct sess *sp, struct vmod_priv *priv, const char *ip)
 		record = GeoIP_record_by_addr(gi,ip);
 	}
 
-	if (record->region) {
+	if (record && record->region) {
 		sprintf(formattedRecord, "ip: %s, country_code: %s, region: %s, city: %s", ip ,record->country_code, record->region, record->city);
 	} else {
 		sprintf(formattedRecord, "ip: %s, country_code: Unknown, region: Unknown",ip);
