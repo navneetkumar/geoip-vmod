@@ -6,7 +6,7 @@ SOURCE_URL = "https://github.com/navneetkumar/geoip-vmod.git"
 PROJECT_ROOT = File.expand_path(File.dirname(__FILE__))
 RPM_ROOT = "#{PROJECT_ROOT}/rpmbuild"
 VERSION = "0.1"
-RELEASE = "1"
+RELEASE = "2"
 require 'fileutils'
 
 namespace :varnish do
