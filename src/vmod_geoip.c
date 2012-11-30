@@ -101,10 +101,13 @@ vmod_record(struct sess *sp, struct vmod_priv *priv, const char *ip)
 
 	if (record && record->region) {
 		sprintf(formattedRecord, "ip: %s, country_code: %s, region: %s, city: %s", ip ,record->country_code, record->region, record->city);
+		GeoIPRecord_delete(record);
 	} else {
 		sprintf(formattedRecord, "ip: %s, country_code: Unknown, region: Unknown",ip);
 	} 
 
 	cp= WS_Dup(sp->wrk->ws, formattedRecord);
+	GeoIP_delete(gi);
+
 	return(cp);
 }
