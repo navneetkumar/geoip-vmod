@@ -22,7 +22,7 @@ client c1 {
 	txreq -url "/"
 	rxresp
 	expect resp.http.X-GeoIP == "Unknown"
-	expect resp.http.X-Location-Unknown == "ip: 127.0.0.1, country_code: Unknown, region: Unknown"
+	expect resp.http.X-Location-Unknown == "ip: 127.0.0.1, country_code: unknown, region: unknown, city: unknown"
 	expect resp.http.X-Location-Known == "ip: 24.24.24.24, country_code: US, region: NY, city: New York"
 }
 
