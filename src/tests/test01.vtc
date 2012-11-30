@@ -13,8 +13,8 @@ varnish v1 -vcl+backend {
         }
 	sub vcl_deliver {
 		set resp.http.X-GeoIP = geoip.country("127.0.0.1");
-		set resp.http.X-Location-Unknown = geoip.record("127.0.0.1");
-		set resp.http.X-Location-Known = geoip.record("24.24.24.24");
+		set resp.http.X-Location-Unknown = geoip.record("127.0.0.1", 0);
+		set resp.http.X-Location-Known = geoip.record("24.24.24.24", 0);
 	}
 } -start
 

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <GeoIP.h>
 #include <GeoIPCity.h>
+#include <string.h>
 
 #include "vrt.h"
 #include "bin/varnishd/cache.h"
@@ -26,6 +27,32 @@
 //  `----
 
 static const char *unknown= "Unknown";
+
+char *trimwhitespace(char *str)
+{
+  char *end;
+  while(isspace(*str)) str++;
+
+  if(*str == 0) 
+    return str;
+
+  end = str + strlen(str) - 1;
+  while(end > str && isspace(*end)) end--;
+  *(end+1) = 0;
+
+  return str;
+}
+
+char* ip_at_index(char* ips, unsigned int index) {
+        char **tokens = (char**)malloc(index * sizeof(char));
+        unsigned int i = 0;
+        for( tokens[i] = strtok_r( ips, ",", &ips); ++i <= index;
+                        tokens[i] = strtok_r( NULL, ",", &ips ) ) {
+        }
+	char *result = strdup(tokens[index]);
+	free(tokens);
+        return trimwhitespace(result);
+}
 
 typedef struct geoIpConfig {
 	char *db_path;
@@ -85,7 +112,7 @@ vmod_country(struct sess *sp, const char *ip)
 }
 
 const char *
-vmod_record(struct sess *sp, struct vmod_priv *priv, const char *ip)
+vmod_record(struct sess *sp, struct vmod_priv *priv, const char *xforwarded_for, int index)
 {
         char *formattedRecord [500];
         char *cp;
@@ -93,6 +120,7 @@ vmod_record(struct sess *sp, struct vmod_priv *priv, const char *ip)
 	GeoIPRecord *record = NULL;
 	GeoIP *gi = NULL;
         config_t *cfg = priv->priv;
+	char *ip = ip_at_index(xforwarded_for, index);
 
 	gi =  GeoIP_open(cfg->db_path, GEOIP_MEMORY_CACHE);
 	if (gi) {

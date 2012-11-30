@@ -1,0 +1,32 @@
+varnishtest "Should Pick specified ip for GeoIP vmod"
+
+server s1 {
+       rxreq
+       txresp
+} -start
+
+varnish v1 -vcl+backend {
+	import geoip from "${pwd}/.libs/libvmod_geoip.so";
+	import std from "${pwd}/../tmp/varnish-3.0.3/lib/libvmod_std/.libs/libvmod_std.so";
+
+	sub vcl_init {
+               geoip.init_database("${pwd}/tests/city.dat");
+        }
+	sub vcl_deliver {
+		set resp.http.X-Location = geoip.record(req.http.X-Forwarded-For, std.integer(req.http.X-Ip-Index,0));
+	}
+} -start
+
+client c1 {
+	txreq -url "/" -hdr "X-Forwarded-For: 24.24.24.24, 25.35.35.35" -hdr "X-Ip-Index: 0"
+	rxresp
+	expect resp.http.X-Location == "ip: 24.24.24.24, country_code: US, region: NY, city: New York"
+}
+client c2 {
+	txreq -url "/" -hdr "X-Forwarded-For: 24.24.24.24, 25.25.25.25" -hdr "X-Ip-Index: 1"
+	rxresp
+	expect resp.http.X-Location == "ip: 25.25.25.25, country_code: US, region: NY, city: New York"
+}
+
+client c1 -run
+client c2 -run
